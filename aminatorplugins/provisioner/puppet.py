@@ -67,6 +67,10 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
                                     action=conf_action(self._config.plugins[self.full_name]),
                                     help='Hostname of Puppet Master')
 
+        puppet_config.add_argument('--puppet-manage-certs', dest='puppet_manage_certs',
+                                    action=conf_action(self._config.plugins[self.full_name]),
+                                    help='Specify if puppet provisioner should generate puppet certs (true/false).  Default value is "true".')
+
         puppet_config.add_argument('--puppet-certs-dir', dest='puppet_certs_dir',
                                     action=conf_action(self._config.plugins[self.full_name]),
                                     help='Used when generating/copying certs for use with Puppet Master')
@@ -99,8 +103,8 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
     def provision(self):
         """
         overrides the base provision
-      * generate certificates
-      * install the certificates on the target volume
+      * generate certificates (if managing certificates)
+      * install the certificates on the target volume (if managing certificates)
           * install puppet on the target volume
       * run the puppet agent in the target chroot environment
         """
@@ -128,11 +132,13 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
             self._install_puppet()
 
             puppet_args = self._get_config_value('puppet_args', '' )
+            puppet_manage_certs = self._get_config_value('puppet_manage_certs', 'true')
 
             if self._puppet_run_mode is 'master':
                 log.info('Running puppet agent')
                 result = puppet_agent( puppet_args, context.package.arg, self._get_config_value('puppet_master', socket.gethostname()) )
-                self._rm_puppet_certs_dirs()
+                if puppet_manage_certs == "true":
+                    self._rm_puppet_certs_dirs()
             elif self._puppet_run_mode is 'apply':
                 if self._puppet_apply_file is '':
                     log.info('Running puppet apply')
@@ -161,7 +167,8 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
         log.debug("Setting metadata release to {0}".format(time.strftime("%Y%m%d%H%M")))
         context.package.attributes = {'name': '', 'version': 'puppet', 'release': time.strftime("%Y%m%d%H%M") }
 
-        if self._puppet_run_mode is 'master':
+        puppet_manage_certs = self._get_config_value('puppet_manage_certs', 'true')
+        if self._puppet_run_mode is 'master' and puppet_manage_certs == 'true':
             self._set_up_puppet_certs(context.package.arg)
         elif self._puppet_run_mode is 'apply':
             self._set_up_puppet_manifests(context.package.arg)

@@ -38,6 +38,8 @@ Then you will need to make add an environment that uses the Puppet provisioner t
 
 --puppet-master - Hostname of Puppet Master
 
+--puppet-manage-certs - Specify if puppet provisioner should generate puppet certs (true/false).  Default value is "true".
+
 --puppet-certs-dir - Used when generating/copying certs for use with Puppet Master
 
 --puppet-private-keys-dir - Used when generating/copying certs for use with Puppet Master
@@ -68,6 +70,13 @@ sudo aminate -B ami-35792c5c --puppet-master=puppet-master.domain.com some-host.
 
 Puppet will use the specified hostname to try to talk to the Puppet Master server and generate certs with the name in the last argument.
 
+### Master specified, no certificate management
+
+```
+sudo aminate -B ami-35792c5c --puppet-master=puppet-master.domain.com --puppet-manage-certs=false some-host.domain.com
+```
+
+Puppet will use the specified hostname to try to talk to the Puppet Master server using the last argument as the certificate name. Puppet provisioner itself will not attempt to generate the certificate or keys.
 
 ## Usage Masterless
 
