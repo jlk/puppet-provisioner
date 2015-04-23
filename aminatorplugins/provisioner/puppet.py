@@ -79,6 +79,10 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
                                     action=conf_action(self._config.plugins[self.full_name]),
                                     help='The name of the tarball containing a hiera.yaml file and hieradata directory.  This option requires Puppet >= 3.1.')
 
+        puppet_config.add_argument('--puppet-install-puppet', dest='puppet_install_puppet',
+                                    action=conf_action(self._config.plugins[self.full_name]),
+                                    help='Specify if puppet provisioner should install puppet and hiera. Default is "true".')
+
         puppet_config.add_argument('--puppet-install-cmd', dest='puppet_install_cmd',
                                     action=conf_action(self._config.plugins[self.full_name]),
                                     help='The command to use to install Puppet.  The native package manager will be used by default.')
@@ -101,7 +105,7 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
         overrides the base provision
       * generate certificates
       * install the certificates on the target volume
-          * install puppet on the target volume
+          * install puppet on the target volume (if puppet_install_puppet is true)
       * run the puppet agent in the target chroot environment
         """
 
@@ -125,7 +129,10 @@ class PuppetProvisionerPlugin(BaseProvisionerPlugin):
         log.debug('Entering chroot at {0}'.format(self._distro._mountpoint))
         with Chroot(self._distro._mountpoint):
 
-            self._install_puppet()
+            puppet_install_puppet = self._get_config_value('puppet_install_puppet', 'true')
+
+            if puppet_install_puppet == "true":
+                self._install_puppet()
 
             puppet_args = self._get_config_value('puppet_args', '' )
 

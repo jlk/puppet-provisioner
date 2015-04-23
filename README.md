@@ -44,6 +44,8 @@ Then you will need to make add an environment that uses the Puppet provisioner t
 
 --puppet-hieradata - The name of the tarball containing a hiera.yaml file and hieradata directory.  This option requires Puppet >= 3.1.')
 
+--puppet-install-puppet - Specify if puppet provisioner should install puppet and hiera. Default is "true".
+
 --puppet-install-cmd - The command to use to install Puppet.  The native package manager will be used by default.
 
 --puppet-hiera-install-cmd - The command to use to install Hiera.  Gem will be used by default.
@@ -68,6 +70,13 @@ sudo aminate -B ami-35792c5c --puppet-master=puppet-master.domain.com some-host.
 
 Puppet will use the specified hostname to try to talk to the Puppet Master server and generate certs with the name in the last argument.
 
+### Master specified, don't attempt to install puppet or hiera
+
+```
+sudo aminate -B ami-35792c5c --puppet-master=puppet-master.domain.com --puppet-install-puppet=false some-host.domain.com
+```
+
+Puppet will use the specified hostname to try to talk to the Puppet Master server and generate certs with the name in the last argument. Puppet provisioner will not attempt to install OS packages for puppet or hiera, but will assume they are already installed.
 
 ## Usage Masterless
 
